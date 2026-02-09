@@ -3,16 +3,24 @@ import InteractiveHeart from "@/components/InteractiveHeart";
 import PhotoGallery from "@/components/PhotoGallery";
 import WhyILoveYou from "@/components/WhyILoveYou";
 import TheQuestion from "@/components/TheQuestion";
+import LoveLetter from "@/components/LoveLetter";
+import MusicPlayer from "@/components/MusicPlayer";
 import { Heart } from "lucide-react";
 
 export default function Home() {
   return (
     <main className="relative">
+      {/* Floating Music Player */}
+      <MusicPlayer />
+
       {/* Hero Section with Typewriter Effect */}
       <HeroSection name="Athalia Sayang" />
 
       {/* Interactive Heart */}
       <InteractiveHeart />
+
+      {/* Love Letter Section */}
+      <LoveLetter />
 
       {/* Photo Gallery with Scroll Reveal */}
       <PhotoGallery />
