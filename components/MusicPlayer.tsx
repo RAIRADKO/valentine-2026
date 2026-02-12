@@ -27,48 +27,54 @@ export default function MusicPlayer() {
     const audioSrc = "/sssSpotify.com_downloader_1770875450943.mp3";
     const discImage = "/disc-photo.png";
 
-    // Auto play on mount (after user interaction with page)
+    // Autoplay: try immediately, fallback to first user interaction
     useEffect(() => {
-        const handleFirstInteraction = () => {
-            if (!hasAutoPlayed && audioRef.current) {
-                audioRef.current
-                    .play()
-                    .then(() => {
-                        setIsPlaying(true);
-                        setHasAutoPlayed(true);
-                    })
-                    .catch(() => { });
-            }
-            if (hasAutoPlayed) {
-                document.removeEventListener("click", handleFirstInteraction);
-                document.removeEventListener("scroll", handleFirstInteraction);
-                document.removeEventListener("touchstart", handleFirstInteraction);
-            }
-        };
+        let played = false;
 
-        const timer = setTimeout(() => {
-            if (audioRef.current) {
-                audioRef.current
-                    .play()
-                    .then(() => {
-                        setIsPlaying(true);
-                        setHasAutoPlayed(true);
-                    })
-                    .catch(() => {
-                        document.addEventListener("click", handleFirstInteraction);
-                        document.addEventListener("scroll", handleFirstInteraction);
-                        document.addEventListener("touchstart", handleFirstInteraction);
-                    });
-            }
-        }, 500);
-
-        return () => {
-            clearTimeout(timer);
+        const removeListeners = () => {
             document.removeEventListener("click", handleFirstInteraction);
             document.removeEventListener("scroll", handleFirstInteraction);
             document.removeEventListener("touchstart", handleFirstInteraction);
+            document.removeEventListener("keydown", handleFirstInteraction);
         };
-    }, [hasAutoPlayed]);
+
+        const tryPlay = () => {
+            if (played || !audioRef.current) return;
+            audioRef.current
+                .play()
+                .then(() => {
+                    played = true;
+                    setIsPlaying(true);
+                    setHasAutoPlayed(true);
+                    removeListeners();
+                })
+                .catch(() => { });
+        };
+
+        const handleFirstInteraction = () => {
+            tryPlay();
+        };
+
+        // Try autoplay immediately
+        tryPlay();
+
+        // Also try after a short delay (some browsers allow after slight delay)
+        const t1 = setTimeout(tryPlay, 300);
+        const t2 = setTimeout(tryPlay, 1000);
+
+        // Fallback: play on first user interaction
+        document.addEventListener("click", handleFirstInteraction);
+        document.addEventListener("scroll", handleFirstInteraction);
+        document.addEventListener("touchstart", handleFirstInteraction);
+        document.addEventListener("keydown", handleFirstInteraction);
+
+        return () => {
+            clearTimeout(t1);
+            clearTimeout(t2);
+            removeListeners();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Update time
     useEffect(() => {
